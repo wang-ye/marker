@@ -3,6 +3,7 @@ from . import ansi
 import re
 import math
 import sys
+import traceback
 '''Command line user interface'''
 
 def _get_terminal_columns():
@@ -51,6 +52,8 @@ def _construct_output(state):
     prompt_line = 'search for: ' + state.input
     displayed_lines.append(prompt_line)
     num_rows += number_of_rows(prompt_line)
+    # import pdb; pdb.set_trace()
+    # print('traceback ', traceback.print_exc())
     matches = state.get_matches()
     if matches:
         # display commands from Max(0,selected_command_index - 10 +1 ) to Max(10,SelectedCommandIndex + 1)

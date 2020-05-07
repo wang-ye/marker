@@ -31,7 +31,7 @@ def get_tldr_common_marks_path():
     return os.path.join(os.getenv('MARKER_HOME'), 'tldr', 'common.txt')
 
 
-def mark_command(cmd_string, alias):
+def mark_command(cmd_string, alias, description=''):
     ''' Adding a new Mark '''
     if cmd_string:
         cmd_string = cmd_string.strip()
@@ -42,28 +42,26 @@ def mark_command(cmd_string, alias):
     if not cmd_string:
         print ("command field is required")
         return
-    if not alias:
-        alias = keyboard_input("Alias?:")
-    else:
-        print("alias: %s" % alias)
-    if '##' in cmd_string or '##' in alias:
-        # ## isn't allowed since it's used as seperator
-        print ("command can't contain ##(it's used as command alias seperator)")
-        return        
+    alias = keyboard_input("Alias?:")
+    print("alias: %s" % alias)
+    description = keyboard_input("Description?:")
+    print("description: %s" % description)
     commands = command.load(get_user_marks_path())
-    command.add(commands, command.Command(cmd_string, alias))
+    command.add(commands, command.Command(cmd_string, alias, description, json_serialize=True))
     command.save(commands, get_user_marks_path())
 
 def get_selected_command_or_input(search):
     ''' Display an interactive UI interface where the user can type and select commands
-        this function returns the selected command if there is matches or the written characters in the prompt line if no matches are present
+        this function returns the selected command if there is matches or the written characters
+        in the prompt line if no matches are present
     '''
-    commands = command.load(get_user_marks_path()) + command.load(get_tldr_os_marks_path()) + command.load(get_tldr_common_marks_path())
+    commands = command.load(get_user_marks_path()) + command.load(get_tldr_os_marks_path()) + \
+               command.load(get_tldr_common_marks_path())
     state = State(commands, search)
     # draw the screen (prompt + matchd marks)
     renderer.refresh(state)
     # wait for user input(returns selected mark)
-    output = read_line(state)
+    output = read_user_input_loop(state)
     # clear the screen
     renderer.erase()
     if not output:
@@ -76,7 +74,7 @@ def remove_command(search):
     commands = command.load(get_user_marks_path())
     state = State(commands, search)
     renderer.refresh(state)
-    selected_mark = read_line(state)
+    selected_mark = read_user_input_loop(state)
     if selected_mark:
         command.remove(commands, selected_mark)
         command.save(commands, get_user_marks_path())
@@ -84,7 +82,7 @@ def remove_command(search):
     renderer.erase()
     return selected_mark
 
-def read_line(state):
+def read_user_input_loop(state):
     ''' parse user input '''
     output = None
     while True:
@@ -136,10 +134,12 @@ class State(object):
         self._selected_command_index = 0
 
     def select_next(self):
-        self._selected_command_index = (self._selected_command_index + 1) % len(self.matches) if len(self.matches) else 0
+        self._selected_command_index = (self._selected_command_index + 1) % len(self.matches) \
+            if len(self.matches) else 0
 
     def select_previous(self):
-        self._selected_command_index = (self._selected_command_index - 1) % len(self.matches) if len(self.matches) else 0
+        self._selected_command_index = (self._selected_command_index - 1) % len(self.matches) \
+            if len(self.matches) else 0
 
     def _update(self):
         self.matches = filter_commands(self.bookmarks, self.input)

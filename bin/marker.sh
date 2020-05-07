@@ -17,6 +17,7 @@ function get_cursor_position(){
   col=$((${col} - 1))
   echo "$row $col"
 }
+
 function get_col_position(){
   echo $(get_cursor_position) | cut -f 2 -d " "
 }
@@ -34,6 +35,8 @@ function run_marker(){
     tmp_file=$(mktemp -t marker.XXXX)
     </dev/tty ${MARKER_HOME}/bin/marker get --search="$1" --stdout="$tmp_file"
     result=$(<$tmp_file)
+    echo "result is " >> ~/tmp.out
+    echo ${result} >> ~/tmp.out
     rm -f $tmp_file
 }
 
@@ -121,7 +124,8 @@ elif [[ -n "$BASH" ]]; then
     }
 
     # Look at zsh _marker_get docstring
-    # In Bash the written string will be accessed via the 'READLINE_LINE' variable, and the cursor position via 'READLINE_POINT'. Those variables are read-write
+    # In Bash the written string will be accessed via the 'READLINE_LINE' variable,
+    # and the cursor position via 'READLINE_POINT'. Those variables are read-write
     function _marker_get {
         # pretty similar to zsh flow
         offset=${READLINE_POINT}
@@ -134,6 +138,7 @@ elif [[ -n "$BASH" ]]; then
 
         word_length=${#word}
         result_length=${#result}
+        echo "get result: " $word $result >> ~/tmp.out
         READLINE_LINE=${READLINE_LINE:0:$((offset-word_length))}${result}${READLINE_LINE:$((offset))}
         offset=$(($offset - $word_length + $result_length))
 
@@ -159,7 +164,7 @@ elif [[ -n "$BASH" ]]; then
 
     bind -x '"\em1":"_marker_mark_1"'
     bind -x '"\em2":"_marker_mark_2"'
-    bind '"'"$marker_key_mark"'":"\em1\n\em2"'   
+    bind '"'"$marker_key_mark"'":"\em1\n\em2"'
 
     bind -x '"'"$marker_key_next_placeholder"'":"_move_cursor_to_next_placeholder"'
 fi
