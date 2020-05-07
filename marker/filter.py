@@ -11,9 +11,13 @@ def filter_commands(marks, search_string):
     def sort_marks(marks, search_string):
         return sorted(
                 marks,
-                key=lambda m:(string_score.score(m.cmd, search_string)*2 + string_score.score(m.alias, search_string)),
+                key=lambda m:(string_score.score(m.cmd, search_string)*2 +
+                              string_score.score(m.alias, search_string) +
+                              string_score.score(m.description, search_string)
+                              ),
                 reverse=True
                 )
+
     def contained(candidate, container):
         tmp = container[:]
         try:
@@ -27,6 +31,7 @@ def filter_commands(marks, search_string):
                     tmp.remove(word)
         except ValueError:
             return False
+
     # Remove extra spaces
     # keep a space if it is at the end of string, since it means that a whole word must be matched
     search_string = search_string.lstrip()
@@ -37,7 +42,8 @@ def filter_commands(marks, search_string):
     words_re = re.compile('\w+')
     search_words = words_re.findall(search_string.lower())
     for mark in marks:
-        mark_splitted = words_re.findall(mark.cmd.lower()) + words_re.findall(mark.alias.lower())
+        mark_splitted = words_re.findall(mark.cmd.lower()) + words_re.findall(mark.alias.lower()) + \
+                        words_re.findall(mark.description.lower())
         if contained(search_words, mark_splitted):
             filtered_bookmarks.append(mark)
 

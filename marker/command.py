@@ -5,7 +5,7 @@ class CmdException(Exception):
     pass
 
 
-def load(filePath, serialize_json=False):
+def load(filePath):
     cmds = []
     try:
         with open(filePath, 'r') as f:
@@ -46,7 +46,7 @@ class Command(object):
             cmd_text.append('alias: ' + self.alias)
         if self.description:
             cmd_text.append('desp: ' + self.description)
-        return ''.join(cmd_text)
+        return '----'.join(cmd_text)
 
     @staticmethod
     def deserialize(s):
